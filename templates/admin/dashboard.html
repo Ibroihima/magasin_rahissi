@@ -1,0 +1,93 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}📊 Tableau de Bord{% endblock %}
+
+{% block content %}
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card teal">
+    <div class="stat-label">Chiffre d'affaires</div>
+    <div class="stat-value">{{ "{:,.0f}".format(stats.ca) }}</div>
+    <div class="stat-sub">FC (hors annulées)</div>
+  </div>
+  <div class="stat-card gold">
+    <div class="stat-label">Total commandes</div>
+    <div class="stat-value">{{ stats.total_commandes }}</div>
+    <div class="stat-sub">commandes reçues</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-label">En attente</div>
+    <div class="stat-value">{{ stats.en_attente }}</div>
+    <div class="stat-sub">à traiter</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Produits actifs</div>
+    <div class="stat-value">{{ stats.total_produits }}</div>
+    <div class="stat-sub">en catalogue</div>
+  </div>
+</div>
+
+<!-- RECENT ORDERS -->
+<div class="card">
+  <div class="card-header">
+    <h2>📦 Commandes récentes</h2>
+    <a href="{{ url_for('admin_commandes') }}" class="btn btn-light btn-sm">Voir tout →</a>
+  </div>
+  <div class="card-body table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>Téléphone</th>
+          <th>Ville</th>
+          <th>Total</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cmd in commandes %}
+        <tr>
+          <td><strong>#{{ cmd.id }}</strong></td>
+          <td>{{ cmd.prenom }} {{ cmd.nom }}</td>
+          <td>
+            <a href="https://wa.me/{{ cmd.telephone|replace(' ','') }}" target="_blank" style="color:#25d366">
+              💬 {{ cmd.telephone }}
+            </a>
+          </td>
+          <td>{{ cmd.ville }}</td>
+          <td><strong>{{ "{:,.0f}".format(cmd.total) }} FC</strong></td>
+          <td>
+            <span class="badge badge-{{ cmd.statut.lower().replace(' ','') }}">{{ cmd.statut }}</span>
+          </td>
+          <td style="color:#6b7280;white-space:nowrap">{{ cmd.date[:16] }}</td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <form method="post" action="{{ url_for('changer_statut', id=cmd.id) }}" style="display:flex;gap:4px">
+                <select name="statut" class="status-select" style="font-size:.78rem;padding:4px 8px">
+                  <option {% if cmd.statut=='En attente' %}selected{% endif %}>En attente</option>
+                  <option {% if cmd.statut=='Confirmée' %}selected{% endif %}>Confirmée</option>
+                  <option {% if cmd.statut=='Expédiée' %}selected{% endif %}>Expédiée</option>
+                  <option {% if cmd.statut=='Annulée' %}selected{% endif %}>Annulée</option>
+                </select>
+                <button class="btn btn-teal btn-sm" type="submit">✓</button>
+              </form>
+              {% if cmd.statut == 'Annulée' %}
+              <form method="post" action="{{ url_for('admin_supprimer_commande', id=cmd.id) }}"
+                    onsubmit="return confirm('Supprimer définitivement la commande #{{ cmd.id }} ?')">
+                <button class="btn btn-danger btn-sm" type="submit" style="width:100%">🗑 Supprimer</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af">Aucune commande pour le moment.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

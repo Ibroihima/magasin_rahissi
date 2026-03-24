@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Commander – Magasin Rahissi{% endblock %}
+{% block content %}
+
+<div class="checkout-section">
+  <div style="margin-bottom:24px">
+    <a href="{{ url_for('voir_panier') }}" style="color:#0d6b6b;font-size:.88rem">← Retour au panier</a>
+  </div>
+  <h1 style="font-size:2rem;margin-bottom:28px">📦 Votre Commande</h1>
+
+  <!-- RÉCAP -->
+  <div class="order-recap">
+    <h3>🛍️ Résumé de la commande</h3>
+    {% for key, item in panier.items() %}
+    <div class="recap-item">
+      <span>{{ item.nom }} {% if item.taille %}({{ item.taille }}){% endif %} × {{ item.quantite }}</span>
+      <span>{{ "{:,.0f}".format(item.prix * item.quantite) }} FC</span>
+    </div>
+    {% endfor %}
+    <div class="recap-total">
+      <span>Total</span>
+      <span>{{ "{:,.0f}".format(total) }} FC</span>
+    </div>
+  </div>
+
+  <div class="cod-note">
+    💵 <span><strong>Paiement à la livraison</strong> – Vous payez en cash quand vous recevez votre commande.</span>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <h2>📋 Vos coordonnées</h2>
+    <form method="post" action="{{ url_for('commander') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom <span class="form-required">*</span></label>
+          <input type="text" name="nom" placeholder="Votre nom" required>
+        </div>
+        <div class="form-group">
+          <label>Prénom <span class="form-required">*</span></label>
+          <input type="text" name="prenom" placeholder="Votre prénom" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Téléphone <span class="form-required">*</span></label>
+        <input type="tel" name="telephone" placeholder="+269 XXX XXXX" required>
+      </div>
+      <div class="form-group">
+        <label>Ville / Village <span class="form-required">*</span></label>
+        <input type="text" name="ville" placeholder="Ex: Mbeni, Moroni, Mitsamiouli…" required>
+      </div>
+      <div class="form-group">
+        <label>Adresse précise (optionnel)</label>
+        <input type="text" name="adresse" placeholder="Quartier, rue, repère…">
+      </div>
+      <div class="form-group">
+        <label>Note pour la livraison (optionnel)</label>
+        <textarea name="note" rows="3" placeholder="Instructions spéciales, meilleur horaire de livraison…" style="resize:vertical"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;padding:16px;font-size:1rem;border-radius:50px">
+        ✅ Confirmer la commande
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

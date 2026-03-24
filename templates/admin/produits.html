@@ -1,0 +1,234 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Produits{% endblock %}
+{% block page_title %}🛍️ Gestion des Produits{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <div class="toolbar-left">
+    <span style="color:#6b7280;font-size:.88rem">{{ produits|length }} produit(s) au total</span>
+  </div>
+  <button class="btn btn-teal" onclick="document.getElementById('modal-ajouter').classList.add('open')">
+    + Ajouter un produit
+  </button>
+</div>
+
+<div class="card">
+  <div class="card-body table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Image</th>
+          <th>Nom</th>
+          <th>Catégorie</th>
+          <th>Prix (FC)</th>
+          <th>Ancien Prix</th>
+          <th>Stock</th>
+          <th>Badge</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in produits %}
+        <tr>
+          <td style="color:#6b7280">#{{ p.id }}</td>
+          <td>
+            <div class="product-thumb">
+              {% if p.image and p.image != 'default.jpg' %}
+                <img src="{{ url_for('static', filename='uploads/' + p.image) }}" alt="">
+              {% else %}
+                {% if p.cat_nom == 'Chaussures' %}👠
+                {% elif p.cat_nom == 'Cosmétiques' %}💄
+                {% elif p.cat_nom == 'Accessoires' %}👜
+                {% elif p.cat_nom == 'Vêtements Fille' %}🎀
+                {% else %}👗{% endif %}
+              {% endif %}
+            </div>
+          </td>
+          <td><strong>{{ p.nom }}</strong></td>
+          <td>{{ p.cat_nom or '–' }}</td>
+          <td><strong>{{ "{:,.0f}".format(p.prix) }}</strong></td>
+          <td>{{ "{:,.0f}".format(p.prix_ancien) if p.prix_ancien else '–' }}</td>
+          <td>
+            <span style="color: {% if p.stock == 0 %}#dc2626{% elif p.stock < 5 %}#d97706{% else %}#16a34a{% endif %};font-weight:600">
+              {{ p.stock }}
+            </span>
+          </td>
+          <td>{{ p.badge or '–' }}</td>
+          <td>
+            <span class="badge badge-{{ 'actif' if p.actif else 'inactif' }}">
+              {{ 'Actif' if p.actif else 'Inactif' }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-light btn-sm" onclick="openEdit({{ p.id }}, '{{ p.nom|replace("'","\\'")|e }}', {{ p.prix }}, {{ p.prix_ancien or 'null' }}, '{{ p.description|replace("'","\\'")|e if p.description else '' }}', {{ p.categorie_id or 'null' }}, {{ p.stock }}, '{{ p.badge or '' }}', {{ p.actif }})">
+                ✏️ Modifier
+              </button>
+              <form method="post" action="{{ url_for('admin_supprimer_produit', id=p.id) }}" onsubmit="return confirm('Supprimer ce produit ?')">
+                <button class="btn btn-danger btn-sm" type="submit">🗑</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" style="text-align:center;padding:60px;color:#9ca3af">Aucun produit. Ajoutez-en un !</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER -->
+<div class="modal-overlay" id="modal-ajouter">
+  <div class="modal">
+    <h2>➕ Ajouter un produit</h2>
+    <form method="post" action="{{ url_for('admin_ajouter_produit') }}" enctype="multipart/form-data">
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Nom du produit *</label>
+          <input type="text" name="nom" required placeholder="Ex: Robe Traditionnelle">
+        </div>
+        <div class="admin-form-group">
+          <label>Catégorie *</label>
+          <select name="categorie_id" required>
+            <option value="">Choisir…</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.emoji }} {{ cat.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Prix (FC) *</label>
+          <input type="number" name="prix" step="1" min="0" required placeholder="2500">
+        </div>
+        <div class="admin-form-group">
+          <label>Ancien prix (optionnel)</label>
+          <input type="number" name="prix_ancien" step="1" min="0" placeholder="3500">
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Stock</label>
+          <input type="number" name="stock" min="0" value="0">
+        </div>
+        <div class="admin-form-group">
+          <label>Badge</label>
+          <select name="badge">
+            <option value="">Aucun</option>
+            <option>Nouveau</option>
+            <option>Promo</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Courte description du produit…"></textarea>
+      </div>
+      <div class="admin-form-group">
+        <label>Image produit</label>
+        <input type="file" name="image" accept="image/*">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-light" onclick="document.getElementById('modal-ajouter').classList.remove('open')">Annuler</button>
+        <button type="submit" class="btn btn-teal">Ajouter le produit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER -->
+<div class="modal-overlay" id="modal-modifier">
+  <div class="modal">
+    <h2>✏️ Modifier le produit</h2>
+    <form method="post" id="form-modifier" enctype="multipart/form-data">
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Nom du produit *</label>
+          <input type="text" name="nom" id="edit-nom" required>
+        </div>
+        <div class="admin-form-group">
+          <label>Catégorie</label>
+          <select name="categorie_id" id="edit-cat">
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.emoji }} {{ cat.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Prix (FC) *</label>
+          <input type="number" name="prix" id="edit-prix" step="1" min="0" required>
+        </div>
+        <div class="admin-form-group">
+          <label>Ancien prix</label>
+          <input type="number" name="prix_ancien" id="edit-prix-ancien" step="1" min="0">
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Stock</label>
+          <input type="number" name="stock" id="edit-stock" min="0">
+        </div>
+        <div class="admin-form-group">
+          <label>Badge</label>
+          <select name="badge" id="edit-badge">
+            <option value="">Aucun</option>
+            <option>Nouveau</option>
+            <option>Promo</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label>Description</label>
+        <textarea name="description" id="edit-desc" rows="3"></textarea>
+      </div>
+      <div class="admin-form-group">
+        <label>
+          <input type="checkbox" name="actif" id="edit-actif" value="1" style="width:auto;margin-right:6px">
+          Produit actif (visible sur la boutique)
+        </label>
+      </div>
+      <div class="admin-form-group">
+        <label>Nouvelle image (optionnel)</label>
+        <input type="file" name="image" accept="image/*">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-light" onclick="document.getElementById('modal-modifier').classList.remove('open')">Annuler</button>
+        <button type="submit" class="btn btn-teal">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEdit(id, nom, prix, prixAncien, desc, catId, stock, badge, actif) {
+  document.getElementById('form-modifier').action = `/admin/produit/${id}/modifier`;
+  document.getElementById('edit-nom').value = nom;
+  document.getElementById('edit-prix').value = prix;
+  document.getElementById('edit-prix-ancien').value = prixAncien || '';
+  document.getElementById('edit-desc').value = desc;
+  document.getElementById('edit-stock').value = stock;
+  document.getElementById('edit-actif').checked = actif == 1;
+  const catSel = document.getElementById('edit-cat');
+  for (let o of catSel.options) { o.selected = (o.value == catId); }
+  const badgeSel = document.getElementById('edit-badge');
+  for (let o of badgeSel.options) { o.selected = (o.value == badge); }
+  document.getElementById('modal-modifier').classList.add('open');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+{% endblock %}

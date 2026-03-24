@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion Admin – Magasin Rahissi</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }} <button onclick="this.parentElement.remove()">×</button></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="login-page">
+  <div class="login-box">
+    <div class="login-logo">Magasin <span>Rahissi</span></div>
+    <h2>Espace Admin</h2>
+    <p class="login-subtitle">Connectez-vous pour gérer votre boutique.</p>
+
+    <form method="post" action="{{ url_for('admin_login') }}">
+      <div class="admin-form-group">
+        <label>Identifiant</label>
+        <input type="text" name="username" placeholder="admin" required autofocus>
+      </div>
+      <div class="admin-form-group">
+        <label>Mot de passe</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-teal" style="width:100%;padding:12px;font-size:.95rem;border-radius:8px;margin-top:8px">
+        🔐 Se connecter
+      </button>
+    </form>
+
+    <div style="margin-top:24px;text-align:center">
+      <a href="{{ url_for('index') }}" style="color:#6b7280;font-size:.82rem">← Retour à la boutique</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

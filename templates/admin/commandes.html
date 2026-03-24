@@ -1,0 +1,100 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Commandes{% endblock %}
+{% block page_title %}📦 Gestion des Commandes{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <div class="toolbar-left">
+    <form method="get" style="display:flex;gap:8px;align-items:center">
+      <select name="statut" class="status-select" onchange="this.form.submit()">
+        <option value="" {% if not statut_filtre %}selected{% endif %}>Toutes les commandes</option>
+        <option {% if statut_filtre=='En attente' %}selected{% endif %}>En attente</option>
+        <option {% if statut_filtre=='Confirmée' %}selected{% endif %}>Confirmée</option>
+        <option {% if statut_filtre=='Expédiée' %}selected{% endif %}>Expédiée</option>
+        <option {% if statut_filtre=='Annulée' %}selected{% endif %}>Annulée</option>
+      </select>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>Téléphone</th>
+          <th>Ville / Adresse</th>
+          <th>Produits commandés</th>
+          <th>Total</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th>Modifier</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cmd in commandes %}
+        <tr>
+          <td><strong>#{{ cmd.id }}</strong></td>
+          <td>{{ cmd.prenom }} {{ cmd.nom }}</td>
+          <td>
+            <a href="https://wa.me/{{ cmd.telephone|replace(' ','') }}?text=Bonjour%20{{ cmd.prenom }}%2C%20votre%20commande%20%23{{ cmd.id }}%20est%20pr%C3%AAte%20!"
+               target="_blank" style="color:#25d366;font-weight:600">💬 {{ cmd.telephone }}</a>
+          </td>
+          <td>
+            {{ cmd.ville }}
+            {% if cmd.adresse %}<br><small style="color:#6b7280">{{ cmd.adresse }}</small>{% endif %}
+            {% if cmd.note %}<br><small style="color:#6b7280;font-style:italic">📝 {{ cmd.note }}</small>{% endif %}
+          </td>
+          <td style="max-width:220px">
+            {% if cmd.details %}
+              {% set details = cmd.details|from_json %}
+              {% for item in details %}
+                <div style="font-size:.82rem;padding:2px 0;border-bottom:1px solid #f3f4f6">
+                  {{ item.nom }} × {{ item.quantite }}
+                  {% if item.taille %}({{ item.taille }}){% endif %}
+                  – {{ "{:,.0f}".format(item.prix * item.quantite) }} FC
+                </div>
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td><strong>{{ "{:,.0f}".format(cmd.total) }} FC</strong></td>
+          <td><span class="badge badge-{{ cmd.statut.lower().replace(' ','') }}">{{ cmd.statut }}</span></td>
+          <td style="white-space:nowrap;color:#6b7280;font-size:.82rem">{{ cmd.date[:16] }}</td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <form method="post" action="{{ url_for('changer_statut', id=cmd.id) }}" style="display:flex;gap:4px">
+                <select name="statut" class="status-select">
+                  <option {% if cmd.statut=='En attente' %}selected{% endif %}>En attente</option>
+                  <option {% if cmd.statut=='Confirmée' %}selected{% endif %}>Confirmée</option>
+                  <option {% if cmd.statut=='Expédiée' %}selected{% endif %}>Expédiée</option>
+                  <option {% if cmd.statut=='Annulée' %}selected{% endif %}>Annulée</option>
+                </select>
+                <button class="btn btn-teal btn-sm" type="submit" title="Enregistrer le statut">✓</button>
+              </form>
+              {% if cmd.statut == 'Annulée' %}
+              <form method="post" action="{{ url_for('admin_supprimer_commande', id=cmd.id) }}"
+                    onsubmit="return confirm('Supprimer définitivement la commande #{{ cmd.id }} de {{ cmd.prenom }} {{ cmd.nom }} ?')">
+                <button class="btn btn-danger btn-sm" type="submit" style="width:100%">
+                  🗑 Supprimer
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;padding:60px;color:#9ca3af">Aucune commande trouvée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add from_json filter support via Jinja
+</script>
+{% endblock %}

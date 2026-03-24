@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Mon Panier – Magasin Rahissi{% endblock %}
+{% block content %}
+
+<div class="cart-section">
+  <h1>🛍️ Mon Panier</h1>
+
+  {% if panier %}
+    {% for key, item in panier.items() %}
+    <div class="cart-item">
+      <div class="cart-item-img">
+        {% if item.image and item.image != 'default.jpg' %}
+          <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.nom }}">
+        {% else %}
+          👗
+        {% endif %}
+      </div>
+      <div class="cart-item-info">
+        <h3>{{ item.nom }}</h3>
+        <p>{{ item.prix|int|string }} FC l'unité {% if item.taille %}· Taille : {{ item.taille }}{% endif %}</p>
+      </div>
+      <div class="cart-controls">
+        <form method="post" action="{{ url_for('modifier_panier') }}">
+          <input type="hidden" name="key" value="{{ key }}">
+          <input type="hidden" name="action" value="diminuer">
+          <button class="cart-qty-btn" type="submit">−</button>
+        </form>
+        <span class="cart-qty">{{ item.quantite }}</span>
+        <form method="post" action="{{ url_for('modifier_panier') }}">
+          <input type="hidden" name="key" value="{{ key }}">
+          <input type="hidden" name="action" value="augmenter">
+          <button class="cart-qty-btn" type="submit">+</button>
+        </form>
+        <form method="post" action="{{ url_for('modifier_panier') }}">
+          <input type="hidden" name="key" value="{{ key }}">
+          <input type="hidden" name="action" value="supprimer">
+          <button class="cart-del-btn" type="submit" title="Supprimer">🗑</button>
+        </form>
+      </div>
+      <div class="cart-item-price">{{ "{:,.0f}".format(item.prix * item.quantite) }} FC</div>
+    </div>
+    {% endfor %}
+
+    <div class="cart-summary">
+      <div>
+        <p style="color:#6b7280;font-size:.88rem">Total de votre commande</p>
+        <div class="cart-total">{{ "{:,.0f}".format(total) }} FC</div>
+        <p style="color:#6b7280;font-size:.8rem;margin-top:4px">💵 Paiement à la livraison</p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="{{ url_for('produits') }}" class="btn-secondary" style="border:1.5px solid #e5e7eb;border-radius:50px;padding:12px 24px;font-weight:500;color:#374151">
+          ← Continuer mes achats
+        </a>
+        <a href="{{ url_for('commander') }}" class="btn-primary">
+          Passer la commande →
+        </a>
+      </div>
+    </div>
+  {% else %}
+    <div class="cart-empty">
+      <div class="cart-empty-icon">🛍️</div>
+      <h2>Votre panier est vide</h2>
+      <p>Découvrez nos produits et ajoutez vos favoris au panier.</p>
+      <a href="{{ url_for('produits') }}" class="btn-primary" style="margin-top:24px;display:inline-flex">
+        Voir la boutique →
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

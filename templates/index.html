@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Magasin Rahissi – Mode Femme & Fille – Mbeni, Grande Comore{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">✦ Nouvelle Collection 2025</p>
+    <h1>La Mode à<br><em>Votre Portée</em></h1>
+    <p>Vêtements, chaussures, cosmétiques et accessoires pour femmes et filles. Livraison partout sur Grande Comore.</p>
+    <div class="hero-btns">
+      <a href="{{ url_for('produits') }}" class="btn-primary">Voir la boutique →</a>
+      <a href="https://wa.me/+2693447012?text=Bonjour%20Magasin%20Rahissi%20!" target="_blank" class="btn-secondary">💬 Commander sur WhatsApp</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-img-circle">
+      🛍️
+      <div class="hero-badge">
+        <div class="price">Dès 1 200 FC</div>
+        <p>Livraison à domicile</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>Livraison partout sur Grande Comore</span><span class="dot">✦</span>
+    <span>Paiement à la livraison</span><span class="dot">✦</span>
+    <span>Nouveaux produits chaque semaine</span><span class="dot">✦</span>
+    <span>Retours acceptés 7–14 jours</span><span class="dot">✦</span>
+    <span>Commandez sur WhatsApp</span><span class="dot">✦</span>
+    <span>Livraison partout sur Grande Comore</span><span class="dot">✦</span>
+    <span>Paiement à la livraison</span><span class="dot">✦</span>
+    <span>Nouveaux produits chaque semaine</span><span class="dot">✦</span>
+    <span>Retours acceptés 7–14 jours</span><span class="dot">✦</span>
+    <span>Commandez sur WhatsApp</span><span class="dot">✦</span>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-tag">Nos Univers</span>
+    <h2 class="section-title">Explorez nos <em>Catégories</em></h2>
+  </div>
+  <div class="categories-grid reveal">
+    {% for cat in categories %}
+    <a href="{{ url_for('produits') }}?categorie={{ cat.id }}" class="cat-card">
+      <div class="cat-emoji">{{ cat.emoji }}</div>
+      <h3>{{ cat.nom }}</h3>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- PRODUITS -->
+<section class="section" style="padding-top:0">
+  <div class="section-header reveal">
+    <span class="section-tag">Cette Semaine</span>
+    <h2 class="section-title">Nos <em>Coups de Cœur</em></h2>
+  </div>
+  <div class="products-grid">
+    {% for p in produits %}
+    <div class="product-card reveal">
+      <div class="product-img">
+        {% if p.image and p.image != 'default.jpg' %}
+          <img src="{{ url_for('static', filename='uploads/' + p.image) }}" alt="{{ p.nom }}">
+        {% else %}
+          <div style="font-size:4rem">
+            {% if p.cat_nom == 'Chaussures' %}👠
+            {% elif p.cat_nom == 'Cosmétiques' %}💄
+            {% elif p.cat_nom == 'Accessoires' %}👜
+            {% elif p.cat_nom == 'Vêtements Fille' %}🎀
+            {% else %}👗{% endif %}
+          </div>
+        {% endif %}
+        {% if p.badge %}
+          <span class="badge-{{ 'new' if p.badge == 'Nouveau' else 'promo' }}">{{ p.badge }}</span>
+        {% endif %}
+        <div class="product-actions">
+          <a href="{{ url_for('produit_detail', id=p.id) }}" class="btn-cart">Voir →</a>
+        </div>
+      </div>
+      <div class="product-info">
+        <p class="cat-label">{{ p.cat_nom or '' }}</p>
+        <h3>{{ p.nom }}</h3>
+        <div class="price-row">
+          <span class="price-current">{{ "{:,.0f}".format(p.prix) }} FC</span>
+          {% if p.prix_ancien %}<span class="price-old">{{ "{:,.0f}".format(p.prix_ancien) }} FC</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p style="text-align:center;padding:60px;color:#9ca3af;grid-column:1/-1">Aucun produit disponible pour le moment.</p>
+    {% endfor %}
+  </div>
+  <div style="text-align:center;padding-bottom:60px">
+    <a href="{{ url_for('produits') }}" class="btn-primary">Voir tous les produits →</a>
+  </div>
+</section>
+
+<!-- PROMO -->
+<div class="promo reveal">
+  <div class="promo-left">
+    <h2>Jusqu'à <em>-50%</em><br>sur les Soldes</h2>
+    <p>Offres limitées · Contactez-nous sur WhatsApp</p>
+    <a href="https://wa.me/+2693447012?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%28e%29%20par%20vos%20soldes%20!" target="_blank" class="btn-primary" style="margin-top:24px">
+      💬 En profiter →
+    </a>
+  </div>
+  <div class="promo-number">-50%</div>
+</div>
+
+<!-- AVANTAGES -->
+<section class="section">
+  <div class="categories-grid reveal" style="grid-template-columns:repeat(4,1fr)">
+    <div class="cat-card">
+      <div class="cat-emoji">🚚</div>
+      <h3>Livraison Rapide</h3>
+      <p>Toute Grande Comore</p>
+    </div>
+    <div class="cat-card">
+      <div class="cat-emoji">💵</div>
+      <h3>Paiement Livraison</h3>
+      <p>Cash à réception</p>
+    </div>
+    <div class="cat-card">
+      <div class="cat-emoji">↩️</div>
+      <h3>Retours Faciles</h3>
+      <p>7 à 14 jours</p>
+    </div>
+    <div class="cat-card">
+      <div class="cat-emoji">💬</div>
+      <h3>Support WhatsApp</h3>
+      <p>Réponse rapide</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}{{ produit.nom }} – Magasin Rahissi{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Accueil</a>
+  <span>›</span>
+  <a href="{{ url_for('produits') }}?categorie={{ produit.categorie_id }}">{{ produit.cat_nom }}</a>
+  <span>›</span>
+  <span>{{ produit.nom }}</span>
+</div>
+
+<div class="detail-grid">
+  <!-- IMAGE -->
+  <div class="detail-img-wrapper">
+    {% if produit.image and produit.image != 'default.jpg' %}
+      <img src="{{ url_for('static', filename='uploads/' + produit.image) }}" alt="{{ produit.nom }}">
+    {% else %}
+      <div style="font-size:10rem">
+        {% if produit.cat_nom == 'Chaussures' %}👠
+        {% elif produit.cat_nom == 'Cosmétiques' %}💄
+        {% elif produit.cat_nom == 'Accessoires' %}👜
+        {% elif produit.cat_nom == 'Vêtements Fille' %}🎀
+        {% else %}👗{% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- INFO -->
+  <div class="detail-info">
+    <p class="detail-cat">{{ produit.cat_nom }}</p>
+    <h1>{{ produit.nom }}</h1>
+
+    <div>
+      <span class="detail-price">{{ "{:,.0f}".format(produit.prix) }} FC</span>
+      {% if produit.prix_ancien %}
+        <span class="detail-old">{{ "{:,.0f}".format(produit.prix_ancien) }} FC</span>
+      {% endif %}
+    </div>
+
+    {% if produit.stock > 0 %}
+      <p class="stock-badge {% if produit.stock < 5 %}stock-low{% endif %}">
+        {% if produit.stock < 5 %}⚠️ Plus que {{ produit.stock }} en stock{% else %}✅ En stock ({{ produit.stock }} disponibles){% endif %}
+      </p>
+    {% else %}
+      <p style="color:#dc2626;font-weight:600">❌ Ce produit est épuisé</p>
+    {% endif %}
+
+    {% if produit.description %}
+    <p>{{ produit.description }}</p>
+    {% endif %}
+
+    {% if produit.stock > 0 %}
+    <form action="{{ url_for('ajouter_panier') }}" method="post">
+      <input type="hidden" name="produit_id" value="{{ produit.id }}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.82rem;font-weight:600;margin-bottom:5px;display:block">Taille</label>
+          <select name="taille" class="size-select" style="width:100%">
+            <option value="">Taille unique</option>
+            <option>XS</option>
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+            <option>2 ans</option><option>4 ans</option><option>6 ans</option>
+            <option>8 ans</option><option>10 ans</option><option>12 ans</option>
+            <option>14 ans</option><option>16 ans</option>
+            <option>36</option><option>37</option><option>38</option>
+            <option>39</option><option>40</option><option>41</option><option>42</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.82rem;font-weight:600;margin-bottom:5px;display:block">Quantité</label>
+          <input type="number" name="quantite" value="1" min="1" max="{{ produit.stock }}" class="qty-input" style="width:100%">
+        </div>
+      </div>
+      <button type="submit" class="btn-add-cart">🛍️ Ajouter au panier</button>
+    </form>
+    {% endif %}
+
+    <!-- WHATSAPP -->
+    <a href="https://wa.me/+2693447012?text=Bonjour%20Magasin%20Rahissi%2C%20je%20suis%20int%C3%A9ress%C3%A9%28e%29%20par%20%22{{ produit.nom|urlencode }}%22%20({{ "{:,.0f}".format(produit.prix) }}%20FC).%20Est-il%20disponible%20%3F"
+       target="_blank"
+       style="display:flex;align-items:center;justify-content:center;gap:10px;background:#25d366;color:white;border-radius:50px;padding:14px;font-weight:600;font-size:.95rem;transition:.3s">
+      💬 Commander via WhatsApp
+    </a>
+
+    <div style="display:flex;gap:20px;font-size:.82rem;color:#6b7280;padding-top:8px">
+      <span>🚚 Livraison Grande Comore</span>
+      <span>💵 Paiement à la livraison</span>
+    </div>
+  </div>
+</div>
+
+{% if similaires %}
+<div class="similaires">
+  <h2>Produits <em>Similaires</em></h2>
+  <div class="products-grid" style="padding:0;max-width:100%">
+    {% for p in similaires %}
+    <a href="{{ url_for('produit_detail', id=p.id) }}" class="product-card" style="text-decoration:none">
+      <div class="product-img">
+        {% if p.image and p.image != 'default.jpg' %}
+          <img src="{{ url_for('static', filename='uploads/' + p.image) }}" alt="{{ p.nom }}">
+        {% else %}
+          <div style="font-size:3.5rem">👗</div>
+        {% endif %}
+      </div>
+      <div class="product-info">
+        <h3>{{ p.nom }}</h3>
+        <span class="price-current">{{ "{:,.0f}".format(p.prix) }} FC</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

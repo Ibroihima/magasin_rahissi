@@ -1,0 +1,53 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Catégories{% endblock %}
+{% block page_title %}📁 Gestion des Catégories{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:24px">
+  <!-- FORM -->
+  <div class="card">
+    <div class="card-header"><h2>➕ Nouvelle catégorie</h2></div>
+    <div style="padding:24px">
+      <form method="post">
+        <div class="admin-form-group">
+          <label>Nom de la catégorie *</label>
+          <input type="text" name="nom" required placeholder="Ex: Bijoux">
+        </div>
+        <div class="admin-form-group">
+          <label>Emoji</label>
+          <input type="text" name="emoji" placeholder="💍" maxlength="4">
+          <small style="color:#6b7280">Choisissez un emoji représentatif</small>
+        </div>
+        <button type="submit" class="btn btn-teal" style="width:100%;margin-top:8px">Ajouter la catégorie</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div class="card">
+    <div class="card-header"><h2>📁 Catégories existantes</h2></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Emoji</th>
+            <th>Nom</th>
+            <th>Nb produits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+          <tr>
+            <td style="font-size:1.6rem">{{ cat.emoji }}</td>
+            <td><strong>{{ cat.nom }}</strong></td>
+            <td><span class="badge badge-actif">{{ cat.nb_produits }} produits</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" style="text-align:center;padding:40px;color:#9ca3af">Aucune catégorie.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
