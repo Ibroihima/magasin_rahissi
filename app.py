@@ -346,3 +346,5 @@ if __name__ == '__main__':
     init_db()
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True)
+
+#fin
